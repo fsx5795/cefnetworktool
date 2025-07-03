@@ -1,8 +1,12 @@
+#include <sys/socket.h>
 #ifdef WIN32
 	//#define _WIN32_WINNT 0x0600
     #include <ws2tcpip.h>
+#else
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #endif
-#include <iostream>
 #include <thread>
 #include "v8handler.h"
 
@@ -12,9 +16,9 @@ void V8Handler::run_tcp(std::string_view ip, unsigned short port) const
     while (running) {
         socklen_t clientLen = sizeof client;
         int csd = accept(fd, reinterpret_cast<sockaddr*>(&client), &clientLen);
-    CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
-    CefRefPtr<CefFrame> frame = context->GetBrowser()->GetMainFrame();
-    frame->ExecuteJavaScript("console.log('+++++++++++++')", frame->GetURL(), 0);
+        CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
+        CefRefPtr<CefFrame> frame = context->GetBrowser()->GetMainFrame();
+        frame->ExecuteJavaScript("console.log('+++++++++++++')", frame->GetURL(), 0);
         if (csd >= 0) {
             char ipstr[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &client.sin_addr, ipstr, INET_ADDRSTRLEN);
@@ -106,16 +110,20 @@ bool V8Handler::Execute(const CefString &name, CefRefPtr<CefV8Value> object, con
             return false;
         }
 #endif
-        char buf[20] = { '\0' };
+        char buf[100] = { '\0' };
         std::vector<std::string> ips;
         if (gethostname(buf, sizeof(buf)) == 0) {
-            struct hostent *he = gethostbyname(buf);
-            if (he != nullptr) {
-                for (int i{0}; he->h_addr_list[i] != nullptr; ++i) {
-                    char *localIp = inet_ntoa(*(struct in_addr*)(he->h_addr_list[i]));
-                    if (localIp != nullptr && strcmp("127.0.0.1", localIp) == 0)
+            struct addrinfo hints, *res;
+            memset(&hints, '\0', sizeof(addrinfo));
+            hints.ai_family = AF_INET;
+            auto ret = getaddrinfo(buf, nullptr, &hints, &res);
+            if (ret == 0) {
+                char host[256];
+                for (addrinfo *tmp = res; tmp != nullptr; tmp = tmp->ai_next) {
+                    getnameinfo(tmp->ai_addr, tmp->ai_addrlen, host, sizeof host, nullptr, 0, NI_NUMERICHOST);
+                    if (strcmp("127.0.0.1", host) == 0)
                         continue;
-                    ips.push_back(localIp);
+                    ips.push_back(host);
                 }
             }
         }
