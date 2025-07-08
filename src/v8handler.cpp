@@ -1,11 +1,11 @@
-#include <sys/socket.h>
 #ifdef WIN32
 	//#define _WIN32_WINNT 0x0600
     #include <ws2tcpip.h>
 #else
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
 #endif
 #include <thread>
 #include "v8handler.h"
