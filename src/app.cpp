@@ -29,7 +29,7 @@ void App::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> fr
 void App::OnContextInitialized()
 {
     CEF_REQUIRE_UI_THREAD();
-	auto url = std::filesystem::current_path().append("index.html").string();
+	auto url = "file://" + std::filesystem::current_path().append("index.html").string();
     CefBrowserSettings settings;
     CefRefPtr<PageHandler> pageHandler(new PageHandler());
     CefRefPtr<ViewDelegate> viewDelegate(new ViewDelegate());

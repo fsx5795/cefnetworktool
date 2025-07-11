@@ -110,6 +110,9 @@ bool V8Handler::Execute(const CefString &name, CefRefPtr<CefV8Value> object, con
             return false;
         }
 #endif
+        CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
+        CefRefPtr<CefFrame> frame = context->GetBrowser()->GetMainFrame();
+        frame->ExecuteJavaScript("console.log('+++++++++++++')", frame->GetURL(), 0);
         char buf[100] = { '\0' };
         std::vector<std::string> ips;
         if (gethostname(buf, sizeof(buf)) == 0) {
