@@ -1,8 +1,3 @@
-if (WIN32)
-else ()
-    #target_link_libraries(${PROJECT_NAME} libcef.so libcef_dll_wrapper.a gtk-4)
-endif ()
-
 cmake_minimum_required(VERSION 3.29)
 if (WIN32)
     if (POLICY CMP0091)
